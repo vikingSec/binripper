@@ -1,4 +1,4 @@
 # binripper
 An integrated malware analysis and reverse engineering platform
 
-There are currently two front ends. I'm stuck between making this a browser-based or native-based project at the moment, so please forgive me while I get that sorted out in the meantime. 
+I've committed to this being a native app built in Rust's [Bevy engine](https://bevyengine.org/). I'm working on figuring out just how to stitch the backend and frontend together. It may end up being joined into a single package, but I'm not entirely sure. 
