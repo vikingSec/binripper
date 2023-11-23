@@ -9,36 +9,27 @@ pub struct Name(String);
 #[derive(Component, Clone)]
 pub struct Pane {
     name: Name,
-    width: f32,
-    height: f32,
-    bgcolor: Color,
-    textcolor: Color,
-    id: Option<Entity>,
+    id: Entity
 }
 
-impl Pane {
-    pub fn setid(&mut self, id: Option<Entity>) {
-        self.id = id;
-    }
-}
+
 
 pub fn initialize_panes(mut commands: Commands, asset_server: Res<AssetServer>, window_query: Query<&Window, With<PrimaryWindow>>) {
     let hwindow = window_query.get_single().unwrap();
-    let mut pane = commands
-        .spawn(NodeBundle {
-            style: Style {
-                width: Val::Px(0.5*hwindow.width()),
-                height: Val::Px(hwindow.height()),
+    let mut paneobj = commands
+        .spawn( NodeBundle {
+                style: Style {
+                    width: Val::Px(0.5*hwindow.width()),
+                    height: Val::Px(hwindow.height()),
+                    ..Default::default()
+                },
+                background_color: BackgroundColor(Color::BLACK),
                 ..Default::default()
-            },
-            background_color: BackgroundColor(Color::BLACK),
-            ..Default::default()
-        })
-        .id();
-    commands
-        .get_entity(pane)
-        .unwrap()
-        .insert(Name("Left Pane".to_string()));
+            }
+            ).id();
+    commands.entity(paneobj).insert(Name("Left Pane".to_string()));
+    
+   
 
     let mut text = commands
         .spawn(
@@ -54,13 +45,22 @@ pub fn initialize_panes(mut commands: Commands, asset_server: Res<AssetServer>, 
             .with_text_alignment(TextAlignment::Right),
         )
         .id();
-    commands.get_entity(text).unwrap().set_parent(pane);
+    commands.get_entity(text).unwrap().set_parent(paneobj);
 }
 
-pub fn change_pane_colors(mut commands: Commands, mut query: Query<(Entity, &Name)>) {
-    for (mut e, name) in query.iter_mut() {
+pub fn change_pane_colors(mut commands: Commands, mut query: Query<(Entity, &Name, &mut BackgroundColor, &mut Style)>) {
+    for (mut e, name, mut bgc, mut style) in query.iter_mut() {
         if (name.0 ==  "Left Pane".to_string()) {
-            
+            let oldbgc = bgc.0.as_rgba_f32();
+            *bgc = BackgroundColor(Color::rgb(oldbgc[0]+0.001, oldbgc[1], oldbgc[2]));
+            println!("Old BGC: r:{}, g:{}, b:{}", oldbgc[0], oldbgc[1], oldbgc[2]);
+            let oldstyle = style.clone();
+            let oldwidth = oldstyle.width.resolve(0.0, Vec2::from((0.0,0.0))).unwrap();
+            *style = Style {
+                height: oldstyle.height,
+                width: Val::Px(oldwidth+1.0),
+                ..oldstyle
+            }
         }
     }
 }
